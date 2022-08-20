@@ -52,55 +52,58 @@ echo
 echo What file type download do you want? tgz, rpm, etc...
 echo
 read splunkDownloadType
-echo
-content=$(wget https://www.splunk.com/en_us/download/previous-releases.html -q -O - | grep -E $splunkVersion.*$splunkDownloadType  )
-echo
-var1=$(echo "$content" | cut -d ',' -f5 | cut -d '"' -f6)
-echo
-var2=$( echo "$content" | cut -d ',' -f7 | cut -d '"' -f8)
-echo
-var3=$(echo "wget -O ${var1} \"${var2}\"")
-echo Does the following command look right?
-echo $var3
-echo
-echo yes/no
-read downCheck
-echo
-if [ $downCheck = yes ]
+if [ $splunkDownloadType = rpm ]
 then
-	echo
-	echo Downloading your Splunk content
-	echo
-	eval $var3
-else
-	echo What version of Splunk are you wanting to download?
-	echo
-	read splunkVersion
-	echo
-	echo What file type download do you want? tgz, rpm, etc...
-	echo
-	read splunkDownloadType
-	echo
 	content=$(wget https://www.splunk.com/en_us/download/previous-releases.html -q -O - | grep -E $splunkVersion.*$splunkDownloadType  )
 	echo
 	var1=$(echo "$content" | cut -d ',' -f5 | cut -d '"' -f6)
 	echo
 	var2=$( echo "$content" | cut -d ',' -f7 | cut -d '"' -f8)
+	echo
 	var3=$(echo "wget -O ${var1} \"${var2}\"")
-fi
-echo
-echo Does the following command look right?
-echo $var3
-echo
-echo yes/no
-read downCheck
-echo
-if [ $downCheck = yes ]
-then
+	echo Does the following command look right?
+	echo $var3
+	echo
+	echo yes/no
+	read downCheck
+	echo
+	if [ $downCheck = yes ]
+	then
+		echo
+		echo Downloading your Splunk content
+		echo
+		eval $var3
+	else
+		exit
+	fi
+else [ $splunkDownloadType = tgz ]
+
+	content=$(wget https://www.splunk.com/en_us/download/previous-releases.html -q -O - | grep -E $splunkVersion.*Linux.*$splunkDownloadType  )
+	echo
+        var1=$(echo "$content" | cut -d ',' -f5 | cut -d '"' -f6)
         echo
-        echo Downloading your Splunk content
+        var2=$( echo "$content" | cut -d ',' -f7 | cut -d '"' -f8)
         echo
-        eval $var3
-else
-	echo Rethink your ability to do this Splunk Upgrade
+        var3=$(echo "wget -O ${var1} \"${var2}\"")
+        echo Does the following command look right?
+        echo $var3
+        echo
+        echo yes/no
+        read downCheck
+        echo
+        if [ $downCheck = yes ]
+        then
+                echo
+                echo Downloading your Splunk content
+                echo
+                eval $var3
+		sudo tar -xvzf $splunkVersion -C /opt
+		sudo chown -R splunk:splunk
+		sudo -u splunk /opt/splunk/bin/splunk start  --accept-license --answer-yes
+		/opt/splunk/bin/splunk enable boot-start -user splunk
+		echo
+		echo Your Splunk instance has been upgraded
+        else
+                exit
+        fi
 fi
