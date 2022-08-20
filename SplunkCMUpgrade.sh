@@ -1,3 +1,5 @@
+#!/bin/bash
+
 echo This file is a shell for automating a Splunk upgrade on the Cluster Manager
 echo At any point in the upgrading process you can press Crtl-C to exit the script
 echo
